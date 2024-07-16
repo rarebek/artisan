@@ -1,0 +1,166 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "equipments.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "EquipmentService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {},
+  "definitions": {
+    "Empty": {
+      "type": "object"
+    },
+    "Equipment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "originCountry": {
+          "type": "string"
+        },
+        "classification": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "string",
+          "format": "int64"
+        },
+        "mainArmament": {
+          "type": "string"
+        },
+        "crewSize": {
+          "type": "string",
+          "format": "int64"
+        },
+        "weightKg": {
+          "type": "number",
+          "format": "float"
+        },
+        "lengthCm": {
+          "type": "number",
+          "format": "float"
+        },
+        "widthCm": {
+          "type": "number",
+          "format": "float"
+        },
+        "heightCm": {
+          "type": "number",
+          "format": "float"
+        },
+        "maxSpeedKm": {
+          "type": "string",
+          "format": "int64"
+        },
+        "operationalRangeKm": {
+          "type": "number",
+          "format": "float"
+        },
+        "yearOfIntroduction": {
+          "type": "string",
+          "format": "int64"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      }
+    },
+    "EquipmentHistory": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "equipmentId": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "actorId": {
+          "type": "string"
+        },
+        "actionTimestamp": {
+          "type": "string"
+        }
+      }
+    },
+    "GetAllHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "histories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/EquipmentHistory"
+          }
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "GetAllResponse": {
+      "type": "object",
+      "properties": {
+        "equipments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/Equipment"
+          }
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

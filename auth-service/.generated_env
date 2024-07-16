@@ -1,0 +1,1 @@
+DB_URL=postgres://postgres:nodirbek@localhost:5432/users?sslmode=disable

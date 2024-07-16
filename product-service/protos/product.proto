@@ -1,0 +1,369 @@
+syntax = "proto3";
+
+option go_package = "genprotos/";
+
+message Product {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string price = 4;
+    string category_id = 5;
+    string quantity = 6;
+}
+
+message Order {
+    string id = 1;
+    string user_id = 2;
+    string total_amount = 3;
+    string status = 4;
+    string created_at = 5;
+}
+
+message Rating {
+    string id = 1;
+    string user_id = 2;
+    float rating = 3;
+    string comment = 4;
+    string created_at = 5;
+}
+
+message Item {
+    string product_id = 1;
+    uint64 quantity = 2;
+}
+
+message ShippingAddress {
+    string street = 1;
+    string city = 2;
+    string country = 3;
+    string zip_code = 4;
+}
+
+message AddProductRequest {
+    string artisan_id = 1;
+    string name = 2;
+    string description = 3;
+    string price = 4;
+    string category_id = 5;
+    string quantity = 6;
+}
+
+message AddProductResponse {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string price = 4;
+    string category_id = 5;
+    string quantity = 6;
+    string created_at = 7;
+}
+
+message EditProductRequest {
+    string id = 1;
+    string name = 2;
+    float price = 3;
+}
+
+message EditProductResponse {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string price = 4;
+    string category_id = 5;
+    string quantity = 6;
+    string updated_at = 7;
+}
+
+message DeleteProductRequest {
+    string id = 1;   
+}
+
+message Message {
+    string message = 1;
+}
+
+message GetAllProductsRequest {
+    uint64 page = 1;
+    uint64 limit = 2;
+}
+
+message GetAllProductsResponse {
+    repeated Product products = 1;
+    uint64 total = 2;
+    uint64 page = 3;
+    uint64 limit = 4;
+}
+
+message GetProductRequest {
+    string id = 1;
+}
+
+message GetProductResponse {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string price = 4;
+    string category_id = 5;
+    string quantity = 6;
+    string created_at = 7;   
+    string updated_at = 8;
+}
+
+message SearchAndFilterRequest {
+    string name = 1;
+    string category = 2;
+    float min_price = 3;
+    float max_price = 4;
+    uint64 page = 5;
+    uint64 limit = 6;
+}
+
+message SearchAndFilterResponse {
+    repeated Product products = 1;
+    uint64 total = 2;
+    uint64 page = 3;
+    uint64 limit = 4;   
+}
+
+message RateProductRequest {
+    string user_id = 1;
+    string product_id = 2;
+    float rating = 3;
+    string comment = 4;
+}
+
+message RateProductResponse {
+    string id = 1;
+    string product_id = 2;
+    string user_id = 3;
+    float rating = 4;
+    string comment = 5;
+    string created_at = 6;
+}
+
+message GetAllRatingsRequest {
+    string product_id = 1;
+}
+
+message GetAllRatingsResponse {
+    repeated Rating ratings = 1;
+    float average_rating = 2;
+    uint64 total_ratings = 3;
+}
+
+message OrderRequest {
+    string user_id = 1;
+    ShippingAddress shipping_address = 2;
+    repeated Item items = 3;
+}
+
+message OrderResponse {
+    string id = 1;
+    string user_id = 2;
+    float total_amount = 3;
+    string status = 4;
+    ShippingAddress shipping_address = 5;
+    string created_at = 6;
+    repeated Item items = 7;
+}
+
+message CancelOrderRequest {
+    string order_id = 1;
+}
+
+message CancelOrderResponse {
+    string id = 1;
+    string status = 2;
+    string updated_at = 3;
+}
+
+message ChangeOrderStatusRequest {
+    string order_id = 1;
+    string status = 2;
+}
+
+message ChangeOrderStatusResponse {
+    string id = 1;
+    string status = 2;
+    string updated_at = 3;
+}
+
+message GetAllOrdersRequest {
+    uint64 page = 1;
+    uint64 limit = 2;
+}
+
+message GetAllOrdersResponse {
+    repeated Order orders = 1;
+    uint64 total = 2;
+    uint64 page = 3;
+    uint64 limit = 4;
+}
+
+message ShowOrderInfoRequest {
+    string id = 1;
+}
+
+message ShowOrderInfoResponse {
+    string order_id = 1;
+    string user_id = 2;
+    repeated Item items = 3;
+    float total_amount = 4;
+    string status = 5;
+    ShippingAddress shipping_address = 6;
+    string created_at = 7;
+    string updated_at = 8;
+}
+
+message PayRequest {
+    string order_id = 1;
+    string payment_method = 2;
+    string card_number = 3;
+    string expiry_date = 4;
+    string cvv = 5;
+}
+
+message PayResponse {
+    string order_id = 1;
+    string payment_id = 2;
+    float amount = 3;
+    string status = 4;
+    string transaction_id = 5;
+    string created_at = 6;
+}
+
+message CheckPaymentStatusRequest {
+    string order_id = 1;
+}
+
+message CheckPaymentStatusResponse {
+    string order_id = 1;
+    string payment_id = 2;
+    float amount = 3;
+    string status = 4;
+    string transaction_id = 5;
+    string created_at = 6;
+}
+
+message UpdateShippingDetailsRequest {
+    string order_id = 1;
+    string tracking_number = 2;
+    string carrier = 3;
+    string estimated_delivery_date = 4;
+}
+
+message UpdateShippingDetailsResponse {
+    string order_id = 1;
+    string tracking_number = 2;
+    string carrier = 3;
+    string estimated_delivery_date = 4;
+    string updated_at = 5;
+}
+
+message AddCategoryRequest {
+    string name = 1;
+    string description = 2;
+}
+
+message AddCategoryResponse {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string created_at = 4;
+}
+
+message GetStatisticsRequest {
+    string start_date = 1;
+    string end_date = 2;
+}
+
+message TopProduct {
+    string id = 1;
+    string name = 2;
+    uint64 sales_count = 3;
+    float revenue = 4;
+}
+
+message TopCategory {
+    string id = 1;
+    string name = 2;
+    uint64 sales_count = 3;
+    float revenue = 4;
+}
+
+message GetStatisticsResponse {
+    uint64 total_sales = 1;
+    float total_revenue = 2;
+    repeated TopProduct top_products = 3;
+    repeated TopCategory top_categories = 4;
+}
+
+message GetUserActivityRequest {
+    string user_id = 1;
+    string start_date = 2;
+    string end_date = 3;
+}
+
+message GetUserActivityResponse {
+    string user_id = 1;
+    uint64 orders_placed = 2;
+    float total_spent = 3;
+    uint64 reviews_written = 4;
+}
+
+message Recommendation {
+    string id = 1;
+    string name = 2;
+    float price = 3;
+    string category_id = 4;
+}
+
+message GetRecommendationsRequest {
+    string user_id = 1;
+    uint64 limit = 2;
+}
+
+message GetRecommendationsResponse {
+    repeated Recommendation recommendations = 1;
+}
+
+message ArtisanRanking {
+    string artisan_id = 1;
+    string full_name = 2;
+    float average_rating = 3;
+    uint64 total_sales = 4;
+    float total_revenue = 5;
+}
+
+message GetArtisanRankingsRequest {
+    string category = 1;
+    uint64 limit = 2;
+}
+
+message GetArtisanRankingsResponse {
+    repeated ArtisanRanking rankings = 1;
+}
+
+service ProductService {
+    rpc AddProduct(AddProductRequest) returns (AddProductResponse);
+    rpc EditProduct(EditProductRequest) returns (EditProductResponse);
+    rpc DeleteProduct(DeleteProductRequest) returns (Message);
+    rpc GetAllProducts(GetAllProductsRequest) returns (GetAllProductsResponse);
+    rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+    rpc SearchAndFilterProduct(SearchAndFilterRequest) returns (SearchAndFilterResponse);
+    rpc RateProduct(RateProductRequest) returns (RateProductResponse);
+    rpc GetAllRatings(GetAllRatingsRequest) returns (GetAllRatingsResponse);
+    rpc OrderProduct(OrderRequest) returns (OrderResponse);
+    rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse);
+    rpc ChangeOrderStatus(ChangeOrderStatusRequest) returns (ChangeOrderStatusResponse);
+    rpc GetAllOrders(GetAllOrdersRequest) returns (GetAllOrdersResponse);
+    rpc ShowOrderInfo(ShowOrderInfoRequest) returns (ShowOrderInfoResponse);
+    rpc Pay(PayRequest) returns (PayResponse);
+    rpc CheckPaymentStatus(CheckPaymentStatusRequest) returns (CheckPaymentStatusResponse);
+    rpc UpdateShippingDetails(UpdateShippingDetailsRequest) returns (UpdateShippingDetailsResponse);
+    rpc AddCategory(AddCategoryRequest) returns (AddCategoryResponse);
+    rpc GetStatistics(GetStatisticsRequest) returns (GetStatisticsResponse);
+    rpc GetUserActivity(GetUserActivityRequest) returns (GetUserActivityResponse);
+    rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse);
+    rpc GetArtisanRankings(GetArtisanRankingsRequest) returns (GetArtisanRankingsResponse);
+}

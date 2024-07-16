@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+option go_package = "genprotos/";
+
+message User {
+    string id = 1;
+    string username = 2;
+    string full_name = 3;
+    string user_type = 4;
+}
+
+message RegisterRequest {
+    string username = 2;
+    string email = 3;
+    string password = 4;
+    string full_name = 5;
+    string user_type = 6;
+}
+
+
+message RegisterResponse {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+    string password = 4;
+    string full_name = 5;
+    string user_type = 6;
+    string created_at = 7;
+}
+
+message LoginRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    bool true = 1;
+}
+
+message ShowProfileRequest {
+    string id = 1;
+}
+
+message ShowProfileResponse {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+    string password = 4;
+    string full_name = 5;
+    string user_type = 6;
+    string created_at = 7;
+    string updated_at = 8;
+}
+
+message EditProfileRequest {
+    string id = 1;
+    string full_name = 2;
+    string bio = 3;
+}
+
+message EditProfileResponse {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+    string password = 4;
+    string full_name = 5;
+    string user_type = 6;
+    string created_at = 7;
+}
+
+message EditUserTypeRequest {
+    string id = 1;
+    string user_type = 2;
+}
+
+message EditUserTypeResponse {
+    string id = 1;
+    string username = 2;
+    string user_type = 3;
+    string updated_at = 4;
+}
+
+message GetAllUsersRequest {
+    uint64 page = 1;
+    uint64 limit = 2;
+}
+
+message GetAllUsersResponse {
+    repeated User users = 1;
+    uint64 total = 2;
+    uint64 page = 3;
+    uint64 limit = 4;
+}
+
+message DeleteUserRequest {
+    string id = 1;
+}
+
+message ResetPasswordRequest {
+    string email = 1;
+}
+
+message AuthMessage {
+    string  message = 1;
+}
+
+service AuthService {
+    rpc Register(RegisterRequest) returns (RegisterResponse);
+    rpc Login(LoginRequest) returns (LoginResponse);
+    rpc ShowProfile(ShowProfileRequest) returns (ShowProfileResponse);
+    rpc EditProfile(EditProfileRequest) returns (EditProfileResponse);
+    rpc EditUserType(EditUserTypeRequest) returns (EditUserTypeResponse);
+    rpc GetAllUsers(GetAllUsersRequest) returns (GetAllUsersResponse);
+    rpc DeleteUser(DeleteUserRequest) returns (AuthMessage);
+    rpc ResetPassword(ResetPasswordRequest) returns (AuthMessage);
+}
