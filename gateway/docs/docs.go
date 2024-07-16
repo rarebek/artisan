@@ -452,7 +452,53 @@ const docTemplate = `{
                 }
             }
         },
-        "/orders": {
+        "/order": {
+            "post": {
+                "description": "Place an order for a product",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Order a product",
+                "parameters": [
+                    {
+                        "description": "Order",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.OrderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.OrderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/order/all": {
             "get": {
                 "description": "Retrieve all orders",
                 "consumes": [
@@ -501,54 +547,10 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "post": {
-                "description": "Place an order for a product",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "orders"
-                ],
-                "summary": "Order a product",
-                "parameters": [
-                    {
-                        "description": "Order",
-                        "name": "order",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.OrderRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.OrderResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
             }
         },
-        "/orders/cancel": {
-            "post": {
+        "/order/cancel": {
+            "put": {
                 "description": "Cancel a placed order",
                 "consumes": [
                     "application/json"
@@ -593,91 +595,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/orders/status": {
-            "put": {
-                "description": "Update the status of an order",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "orders"
-                ],
-                "summary": "Change order status",
-                "parameters": [
-                    {
-                        "description": "Order Status",
-                        "name": "status",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.ChangeOrderStatusRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.ChangeOrderStatusResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
-            }
-        },
-        "/orders/{id}": {
-            "get": {
-                "description": "Retrieve information for a specific order",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "orders"
-                ],
-                "summary": "Show order information",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Order ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.ShowOrderInfoResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
-            }
-        },
-        "/payments": {
+        "/order/pay": {
             "post": {
                 "description": "Make a payment for a specific order",
                 "consumes": [
@@ -723,7 +641,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/payments/status": {
+        "/order/payment/status/{order_id}": {
             "post": {
                 "description": "Check the status of a payment",
                 "consumes": [
@@ -738,13 +656,11 @@ const docTemplate = `{
                 "summary": "Check payment status",
                 "parameters": [
                     {
-                        "description": "Payment Status",
-                        "name": "payment",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.CheckPaymentStatusRequest"
-                        }
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "order_id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -758,6 +674,136 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/genprotos.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/order/shipping": {
+            "put": {
+                "description": "Update the shipping details for an order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shipping"
+                ],
+                "summary": "Update shipping details",
+                "parameters": [
+                    {
+                        "description": "Shipping Details",
+                        "name": "shipping",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.UpdateShippingDetailsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.UpdateShippingDetailsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/order/status": {
+            "put": {
+                "description": "Update the status of an order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Change order status",
+                "parameters": [
+                    {
+                        "description": "Order Status",
+                        "name": "status",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.ChangeOrderStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.ChangeOrderStatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/order/{id}": {
+            "get": {
+                "description": "Retrieve information for a specific order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Show order information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.ShowOrderInfoResponse"
                         }
                     },
                     "500": {
@@ -798,6 +844,96 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/genprotos.AddProductResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/product/delete/{id}": {
+            "delete": {
+                "description": "Delete a product from the catalog",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Delete a product",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Product ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/product/edit": {
+            "put": {
+                "description": "Edit the details of an existing product",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Edit an existing product",
+                "parameters": [
+                    {
+                        "description": "Product",
+                        "name": "product",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.EditProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.EditProductResponse"
                         }
                     },
                     "400": {
@@ -864,94 +1000,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "put": {
-                "description": "Edit the details of an existing product",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "products"
-                ],
-                "summary": "Edit an existing product",
-                "parameters": [
-                    {
-                        "description": "Product",
-                        "name": "product",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.EditProductRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.EditProductResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a product from the catalog",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "products"
-                ],
-                "summary": "Delete a product",
-                "parameters": [
-                    {
-                        "description": "Product",
-                        "name": "product",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.DeleteProductRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
             }
         },
         "/products/rate": {
@@ -1000,7 +1048,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/products/ratings": {
+        "/products/ratings/{product_id}": {
             "get": {
                 "description": "Retrieve all ratings for a specific product",
                 "consumes": [
@@ -1154,52 +1202,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/genprotos.GetRecommendationsResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
-            }
-        },
-        "/shipping": {
-            "put": {
-                "description": "Update the shipping details for an order",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "shipping"
-                ],
-                "summary": "Update shipping details",
-                "parameters": [
-                    {
-                        "description": "Shipping Details",
-                        "name": "shipping",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.UpdateShippingDetailsRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.UpdateShippingDetailsResponse"
                         }
                     },
                     "400": {
@@ -1463,14 +1465,6 @@ const docTemplate = `{
                 }
             }
         },
-        "genprotos.CheckPaymentStatusRequest": {
-            "type": "object",
-            "properties": {
-                "order_id": {
-                    "type": "string"
-                }
-            }
-        },
         "genprotos.CheckPaymentStatusResponse": {
             "type": "object",
             "properties": {
@@ -1490,14 +1484,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "transaction_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "genprotos.DeleteProductRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
                     "type": "string"
                 }
             }

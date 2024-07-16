@@ -98,11 +98,6 @@ definitions:
       updated_at:
         type: string
     type: object
-  genprotos.CheckPaymentStatusRequest:
-    properties:
-      order_id:
-        type: string
-    type: object
   genprotos.CheckPaymentStatusResponse:
     properties:
       amount:
@@ -116,11 +111,6 @@ definitions:
       status:
         type: string
       transaction_id:
-        type: string
-    type: object
-  genprotos.DeleteProductRequest:
-    properties:
-      id:
         type: string
     type: object
   genprotos.EditProductRequest:
@@ -941,7 +931,62 @@ paths:
       summary: Add a new category
       tags:
       - category
-  /orders:
+  /order:
+    post:
+      consumes:
+      - application/json
+      description: Place an order for a product
+      parameters:
+      - description: Order
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/genprotos.OrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/genprotos.OrderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+      summary: Order a product
+      tags:
+      - orders
+  /order/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve information for a specific order
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/genprotos.ShowOrderInfoResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+      summary: Show order information
+      tags:
+      - orders
+  /order/all:
     get:
       consumes:
       - application/json
@@ -975,62 +1020,8 @@ paths:
       summary: Get all orders
       tags:
       - orders
-    post:
-      consumes:
-      - application/json
-      description: Place an order for a product
-      parameters:
-      - description: Order
-        in: body
-        name: order
-        required: true
-        schema:
-          $ref: '#/definitions/genprotos.OrderRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/genprotos.OrderResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-      summary: Order a product
-      tags:
-      - orders
-  /orders/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Retrieve information for a specific order
-      parameters:
-      - description: Order ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/genprotos.ShowOrderInfoResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-      summary: Show order information
-      tags:
-      - orders
-  /orders/cancel:
-    post:
+  /order/cancel:
+    put:
       consumes:
       - application/json
       description: Cancel a placed order
@@ -1059,37 +1050,7 @@ paths:
       summary: Cancel an order
       tags:
       - orders
-  /orders/status:
-    put:
-      consumes:
-      - application/json
-      description: Update the status of an order
-      parameters:
-      - description: Order Status
-        in: body
-        name: status
-        required: true
-        schema:
-          $ref: '#/definitions/genprotos.ChangeOrderStatusRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/genprotos.ChangeOrderStatusResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-      summary: Change order status
-      tags:
-      - orders
-  /payments:
+  /order/pay:
     post:
       consumes:
       - application/json
@@ -1119,18 +1080,17 @@ paths:
       summary: Pay for an order
       tags:
       - payments
-  /payments/status:
+  /order/payment/status/{order_id}:
     post:
       consumes:
       - application/json
       description: Check the status of a payment
       parameters:
-      - description: Payment Status
-        in: body
-        name: payment
+      - description: Order ID
+        in: path
+        name: order_id
         required: true
-        schema:
-          $ref: '#/definitions/genprotos.CheckPaymentStatusRequest'
+        type: string
       produces:
       - application/json
       responses:
@@ -1149,6 +1109,66 @@ paths:
       summary: Check payment status
       tags:
       - payments
+  /order/shipping:
+    put:
+      consumes:
+      - application/json
+      description: Update the shipping details for an order
+      parameters:
+      - description: Shipping Details
+        in: body
+        name: shipping
+        required: true
+        schema:
+          $ref: '#/definitions/genprotos.UpdateShippingDetailsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/genprotos.UpdateShippingDetailsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+      summary: Update shipping details
+      tags:
+      - shipping
+  /order/status:
+    put:
+      consumes:
+      - application/json
+      description: Update the status of an order
+      parameters:
+      - description: Order Status
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/genprotos.ChangeOrderStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/genprotos.ChangeOrderStatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+      summary: Change order status
+      tags:
+      - orders
   /product/add:
     post:
       consumes:
@@ -1179,18 +1199,17 @@ paths:
       summary: Add a new product
       tags:
       - products
-  /products:
+  /product/delete/{id}:
     delete:
       consumes:
       - application/json
       description: Delete a product from the catalog
       parameters:
-      - description: Product
-        in: body
-        name: product
+      - description: Product ID
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/genprotos.DeleteProductRequest'
+        type: string
       produces:
       - application/json
       responses:
@@ -1209,6 +1228,37 @@ paths:
       summary: Delete a product
       tags:
       - products
+  /product/edit:
+    put:
+      consumes:
+      - application/json
+      description: Edit the details of an existing product
+      parameters:
+      - description: Product
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/genprotos.EditProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/genprotos.EditProductResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+      summary: Edit an existing product
+      tags:
+      - products
+  /products:
     get:
       consumes:
       - application/json
@@ -1240,35 +1290,6 @@ paths:
           schema:
             $ref: '#/definitions/genprotos.Message'
       summary: Get all products
-      tags:
-      - products
-    put:
-      consumes:
-      - application/json
-      description: Edit the details of an existing product
-      parameters:
-      - description: Product
-        in: body
-        name: product
-        required: true
-        schema:
-          $ref: '#/definitions/genprotos.EditProductRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/genprotos.EditProductResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-      summary: Edit an existing product
       tags:
       - products
   /products/{id}:
@@ -1326,7 +1347,7 @@ paths:
       summary: Rate a product
       tags:
       - products
-  /products/ratings:
+  /products/ratings/{product_id}:
     get:
       consumes:
       - application/json
@@ -1413,36 +1434,6 @@ paths:
       summary: Get product recommendations
       tags:
       - recommendation
-  /shipping:
-    put:
-      consumes:
-      - application/json
-      description: Update the shipping details for an order
-      parameters:
-      - description: Shipping Details
-        in: body
-        name: shipping
-        required: true
-        schema:
-          $ref: '#/definitions/genprotos.UpdateShippingDetailsRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/genprotos.UpdateShippingDetailsResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-      summary: Update shipping details
-      tags:
-      - shipping
   /statistics:
     post:
       consumes:

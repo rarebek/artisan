@@ -60,7 +60,7 @@ func (h *ProductHandlers) AddProduct(ctx *gin.Context) {
 // @Success 200 {object} genprotos.EditProductResponse
 // @Failure 400 {object} genprotos.Message
 // @Failure 500 {object} genprotos.Message
-// @Router /products [put]
+// @Router /product/edit [put]
 func (h *ProductHandlers) EditProduct(ctx *gin.Context) {
 	var req genprotos.EditProductRequest
 
@@ -84,11 +84,11 @@ func (h *ProductHandlers) EditProduct(ctx *gin.Context) {
 // @Tags products
 // @Accept json
 // @Produce json
-// @Param product body genprotos.DeleteProductRequest true "Product"
+// @Param id path string true "Product ID"
 // @Success 200 {object} genprotos.Message
 // @Failure 400 {object} genprotos.Message
 // @Failure 500 {object} genprotos.Message
-// @Router /products [delete]
+// @Router /product/delete/{id} [delete]
 func (h *ProductHandlers) DeleteProduct(ctx *gin.Context) {
 	var req genprotos.DeleteProductRequest
 
@@ -232,7 +232,7 @@ func (h *ProductHandlers) RateProduct(ctx *gin.Context) {
 // @Param product_id query string true "Product ID"
 // @Success 200 {object} genprotos.GetAllRatingsResponse
 // @Failure 500 {object} genprotos.Message
-// @Router /products/ratings [get]
+// @Router /products/ratings/{product_id} [get]
 func (h *ProductHandlers) GetAllRatings(ctx *gin.Context) {
 	var req genprotos.GetAllRatingsRequest
 	req.ProductId = ctx.Query("product_id")
@@ -256,7 +256,7 @@ func (h *ProductHandlers) GetAllRatings(ctx *gin.Context) {
 // @Success 200 {object} genprotos.OrderResponse
 // @Failure 400 {object} genprotos.Message
 // @Failure 500 {object} genprotos.Message
-// @Router /orders [post]
+// @Router /order [post]
 func (h *ProductHandlers) OrderProduct(ctx *gin.Context) {
 	var req genprotos.OrderRequest
 
@@ -284,7 +284,7 @@ func (h *ProductHandlers) OrderProduct(ctx *gin.Context) {
 // @Success 200 {object} genprotos.CancelOrderResponse
 // @Failure 400 {object} genprotos.Message
 // @Failure 500 {object} genprotos.Message
-// @Router /orders/cancel [post]
+// @Router /order/cancel [put]
 func (h *ProductHandlers) CancelOrder(ctx *gin.Context) {
 	var req genprotos.CancelOrderRequest
 
@@ -312,7 +312,7 @@ func (h *ProductHandlers) CancelOrder(ctx *gin.Context) {
 // @Success 200 {object} genprotos.ChangeOrderStatusResponse
 // @Failure 400 {object} genprotos.Message
 // @Failure 500 {object} genprotos.Message
-// @Router /orders/status [put]
+// @Router /order/status [put]
 func (h *ProductHandlers) ChangeOrderStatus(ctx *gin.Context) {
 	var req genprotos.ChangeOrderStatusRequest
 
@@ -341,7 +341,7 @@ func (h *ProductHandlers) ChangeOrderStatus(ctx *gin.Context) {
 // @Success 200 {object} genprotos.GetAllOrdersResponse
 // @Failure 400 {object} genprotos.Message
 // @Failure 500 {object} genprotos.Message
-// @Router /orders [get]
+// @Router /order/all [get]
 func (h *ProductHandlers) GetAllOrders(ctx *gin.Context) {
 	var req genprotos.GetAllOrdersRequest
 
@@ -376,7 +376,7 @@ func (h *ProductHandlers) GetAllOrders(ctx *gin.Context) {
 // @Param id path string true "Order ID"
 // @Success 200 {object} genprotos.ShowOrderInfoResponse
 // @Failure 500 {object} genprotos.Message
-// @Router /orders/{id} [get]
+// @Router /order/{id} [get]
 func (h *ProductHandlers) ShowOrderInfo(ctx *gin.Context) {
 	var req genprotos.ShowOrderInfoRequest
 	req.Id = ctx.Param("id")
@@ -400,7 +400,7 @@ func (h *ProductHandlers) ShowOrderInfo(ctx *gin.Context) {
 // @Success 200 {object} genprotos.PayResponse
 // @Failure 400 {object} genprotos.Message
 // @Failure 500 {object} genprotos.Message
-// @Router /payments [post]
+// @Router /order/pay [post]
 func (h *ProductHandlers) Pay(ctx *gin.Context) {
 	var req genprotos.PayRequest
 
@@ -424,11 +424,11 @@ func (h *ProductHandlers) Pay(ctx *gin.Context) {
 // @Tags payments
 // @Accept json
 // @Produce json
-// @Param payment body genprotos.CheckPaymentStatusRequest true "Payment Status"
+// @Param order_id path string true "Order ID"
 // @Success 200 {object} genprotos.CheckPaymentStatusResponse
 // @Failure 400 {object} genprotos.Message
 // @Failure 500 {object} genprotos.Message
-// @Router /payments/status [post]
+// @Router /order/payment/status/{order_id} [post]
 func (h *ProductHandlers) CheckPaymentStatus(ctx *gin.Context) {
 	var req genprotos.CheckPaymentStatusRequest
 
@@ -456,7 +456,7 @@ func (h *ProductHandlers) CheckPaymentStatus(ctx *gin.Context) {
 // @Success 200 {object} genprotos.UpdateShippingDetailsResponse
 // @Failure 400 {object} genprotos.Message
 // @Failure 500 {object} genprotos.Message
-// @Router /shipping [put]
+// @Router /order/shipping [put]
 func (h *ProductHandlers) UpdateShippingDetails(ctx *gin.Context) {
 	var req genprotos.UpdateShippingDetailsRequest
 
@@ -502,7 +502,6 @@ func (h *ProductHandlers) AddCategory(ctx *gin.Context) {
 	ctx.JSON(200, resp)
 }
 
-
 // GetStatistics godoc
 // @Summary Get sales statistics
 // @Description Get total sales and revenue within a specified date range
@@ -530,7 +529,6 @@ func (h *ProductHandlers) GetStatistics(ctx *gin.Context) {
 
 	ctx.JSON(200, resp)
 }
-
 
 // GetUserActivity godoc
 // @Summary Get user activity
@@ -560,7 +558,6 @@ func (h *ProductHandlers) GetUserActivity(ctx *gin.Context) {
 	ctx.JSON(200, resp)
 }
 
-
 // GetArtisanRankings godoc
 // @Summary Get artisan rankings
 // @Description Get rankings of artisans based on category
@@ -588,7 +585,6 @@ func (h *ProductHandlers) GetArtisanRankings(ctx *gin.Context) {
 
 	ctx.JSON(200, resp)
 }
-
 
 // GetRecommendations godoc
 // @Summary Get product recommendations
