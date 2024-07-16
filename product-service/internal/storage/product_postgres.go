@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -32,6 +33,35 @@ func New(config *config.Config) (*Product, error) {
 }
 
 func (p *Product) AddProduct(ctx context.Context, req *genprotos.AddProductRequest) (*genprotos.AddProductResponse, error) {
+	// Begin a transaction
+	tx, err := p.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %v", err)
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+
+	// Check if category ID exists
+	var categoryId string
+	queryCategory := "SELECT id FROM product_categories WHERE id = $1"
+	err = tx.QueryRowContext(ctx, queryCategory, req.CategoryId).Scan(&categoryId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("category ID %s not found", req.CategoryId)
+		}
+		return nil, fmt.Errorf("failed to verify category ID: %v", err)
+	}
+
+	// Prepare product data
 	data := map[string]interface{}{
 		"id":          uuid.NewString(),
 		"name":        req.Name,
@@ -44,6 +74,7 @@ func (p *Product) AddProduct(ctx context.Context, req *genprotos.AddProductReque
 		"updated_at":  time.Now(),
 	}
 
+	// Build SQL query to insert product
 	query, args, err := p.queryBuilder.Insert("products").
 		SetMap(data).
 		ToSql()
@@ -51,10 +82,12 @@ func (p *Product) AddProduct(ctx context.Context, req *genprotos.AddProductReque
 		return nil, fmt.Errorf("failed to build SQL query: %v", err)
 	}
 
-	if _, err := p.db.ExecContext(ctx, query, args...); err != nil {
+	// Execute SQL query
+	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
 		return nil, fmt.Errorf("failed to execute SQL query: %v", err)
 	}
 
+	// Return response
 	return &genprotos.AddProductResponse{
 		Id:          data["id"].(string),
 		Name:        req.Name,
@@ -167,25 +200,29 @@ func (p *Product) SearchAndFilterProducts(ctx context.Context, req *genprotos.Se
 	var products []*genprotos.Product
 	var total uint64
 
-	query := squirrel.Select("id", "name", "description", "price", "category_id", "quantity").
-		From("products").
-		Limit(req.Limit).
-		Offset((req.Page - 1) * req.Limit)
+	baseQuery := "SELECT id, name, description, price, category_id, quantity FROM products WHERE 1=1"
+	countQuery := "SELECT COUNT(*) FROM products WHERE 1=1"
 
 	if req.Name != "" {
-		query = query.Where(squirrel.ILike{"name": fmt.Sprintf("%%%s%%", req.Name)})
+		baseQuery += fmt.Sprintf(" AND name ILIKE '%%%s%%'", req.Name)
+		countQuery += fmt.Sprintf(" AND name ILIKE '%%%s%%'", req.Name)
 	}
 	if req.Category != "" {
-		query = query.Where(squirrel.Eq{"category_id": req.Category})
+		baseQuery += fmt.Sprintf(" AND category_id = '%s'", req.Category)
+		countQuery += fmt.Sprintf(" AND category_id = '%s'", req.Category)
 	}
 	if req.MinPrice > 0 {
-		query = query.Where(squirrel.GtOrEq{"price": req.MinPrice})
+		baseQuery += fmt.Sprintf(" AND price >= %f", req.MinPrice)
+		countQuery += fmt.Sprintf(" AND price >= %f", req.MinPrice)
 	}
 	if req.MaxPrice > 0 {
-		query = query.Where(squirrel.LtOrEq{"price": req.MaxPrice})
+		baseQuery += fmt.Sprintf(" AND price <= %f", req.MaxPrice)
+		countQuery += fmt.Sprintf(" AND price <= %f", req.MaxPrice)
 	}
 
-	rows, err := query.RunWith(p.db).QueryContext(ctx)
+	baseQuery += fmt.Sprintf(" LIMIT %d OFFSET %d", req.Limit, (req.Page-1)*req.Limit)
+
+	rows, err := p.db.Query(baseQuery)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch products: %v", err)
 	}
@@ -200,21 +237,7 @@ func (p *Product) SearchAndFilterProducts(ctx context.Context, req *genprotos.Se
 		products = append(products, &product)
 	}
 
-	countQuery := squirrel.Select("COUNT(*)").From("products")
-	if req.Name != "" {
-		countQuery = countQuery.Where(squirrel.Like{"name": fmt.Sprintf("%%%s%%", req.Name)})
-	}
-	if req.Category != "" {
-		countQuery = countQuery.Where(squirrel.Eq{"category_id": req.Category})
-	}
-	if req.MinPrice > 0 {
-		countQuery = countQuery.Where(squirrel.GtOrEq{"price": req.MinPrice})
-	}
-	if req.MaxPrice > 0 {
-		countQuery = countQuery.Where(squirrel.LtOrEq{"price": req.MaxPrice})
-	}
-
-	err = countQuery.RunWith(p.db).QueryRowContext(ctx).Scan(&total)
+	err = p.db.QueryRowContext(ctx, countQuery).Scan(&total)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get total number of filtered products: %v", err)
 	}
@@ -330,10 +353,29 @@ func (p *Product) ShowOrderInfo(ctx context.Context, req *genprotos.ShowOrderInf
 		ShippingAddress: &genprotos.ShippingAddress{},
 	}
 
-	err := p.db.QueryRowContext(ctx, "SELECT id, user_id, total_amount, status, created_at, updated_at FROM orders WHERE id = $1", req.Id).
-		Scan(&order.OrderId, &order.UserId, &order.TotalAmount, &order.Status, &order.CreatedAt, &order.UpdatedAt)
+	var shippingAddressJSON []byte
+
+	err := p.db.QueryRowContext(ctx, `
+        SELECT id, user_id, total_amount, status, shipping_address, created_at, updated_at 
+        FROM orders 
+        WHERE id = $1
+    `, req.Id).Scan(
+		&order.OrderId,
+		&order.UserId,
+		&order.TotalAmount,
+		&order.Status,
+		&shippingAddressJSON,
+		&order.CreatedAt,
+		&order.UpdatedAt,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch order: %v", err)
+	}
+
+	// Unmarshal the shipping address JSON
+	err = json.Unmarshal(shippingAddressJSON, order.ShippingAddress)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal shipping address: %v", err)
 	}
 
 	rows, err := p.db.QueryContext(ctx, "SELECT product_id, quantity FROM order_items WHERE order_id = $1", req.Id)
@@ -351,10 +393,8 @@ func (p *Product) ShowOrderInfo(ctx context.Context, req *genprotos.ShowOrderInf
 		order.Items = append(order.Items, item)
 	}
 
-	err = p.db.QueryRowContext(ctx, "SELECT street, city, country, zip_code FROM shipping_addresses WHERE order_id = $1", req.Id).
-		Scan(&order.ShippingAddress.Street, &order.ShippingAddress.City, &order.ShippingAddress.Country, &order.ShippingAddress.ZipCode)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch shipping address: %v", err)
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over order items rows: %v", err)
 	}
 
 	return order, nil
@@ -419,10 +459,18 @@ func (p *Product) OrderProduct(ctx context.Context, req *genprotos.OrderRequest)
 	}
 	defer tx.Rollback()
 
+	totalAmount := calculateTotalAmount(ctx, p.db, req.Items)
+
+	// Marshal ShippingAddress to JSON
+	shippingAddressJSON, err := json.Marshal(req.ShippingAddress)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal shipping address: %v", err)
+	}
+
 	_, err = tx.ExecContext(ctx, `
-        INSERT INTO orders (id, user_id, total_amount, status, created_at)
-        VALUES ($1, $2, $3, $4, $5)
-    `, orderID, req.UserId, calculateTotalAmount(ctx, p.db, req.Items), "pending", time.Now())
+        INSERT INTO orders (id, user_id, total_amount, status, shipping_address, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
+    `, orderID, req.UserId, totalAmount, "pending", shippingAddressJSON, time.Now())
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert order into database: %v", err)
 	}
@@ -432,11 +480,11 @@ func (p *Product) OrderProduct(ctx context.Context, req *genprotos.OrderRequest)
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetch product price: %v", err)
 		}
-
+		id := uuid.NewString()
 		_, err = tx.ExecContext(ctx, `
-            INSERT INTO order_items (order_id, product_id, quantity, price)
-            VALUES ($1, $2, $3, $4)
-        `, orderID, item.ProductId, item.Quantity, price)
+            INSERT INTO order_items (id, order_id, product_id, quantity, price)
+            VALUES ($1, $2, $3, $4, $5)
+        `, id, orderID, item.ProductId, item.Quantity, price)
 		if err != nil {
 			return nil, fmt.Errorf("failed to insert order item into database: %v", err)
 		}
@@ -449,7 +497,7 @@ func (p *Product) OrderProduct(ctx context.Context, req *genprotos.OrderRequest)
 	return &genprotos.OrderResponse{
 		Id:              orderID.String(),
 		UserId:          req.UserId,
-		TotalAmount:     float32(calculateTotalAmount(ctx, p.db, req.Items)),
+		TotalAmount:     float32(totalAmount),
 		Status:          "pending",
 		ShippingAddress: req.ShippingAddress,
 		CreatedAt:       time.Now().Format(time.RFC3339),
@@ -539,32 +587,54 @@ func calculateTotalAmountForPayment(ctx context.Context, db *sql.DB, orderID str
 }
 
 func (p *Product) UpdateShippingDetails(ctx context.Context, req *genprotos.UpdateShippingDetailsRequest) (*genprotos.UpdateShippingDetailsResponse, error) {
-	tx, err := p.db.BeginTx(ctx, nil)
+	// Create the shipping details map
+	shippingDetails := map[string]interface{}{
+		"tracking_number":         req.TrackingNumber,
+		"carrier":                 req.Carrier,
+		"estimated_delivery_date": req.EstimatedDeliveryDate,
+	}
+
+	// Convert the shipping details to JSON
+	shippingDetailsJSON, err := json.Marshal(shippingDetails)
 	if err != nil {
-		return nil, fmt.Errorf("failed to start transaction: %v", err)
+		return nil, fmt.Errorf("failed to marshal shipping details: %v", err)
 	}
-	defer tx.Rollback()
 
-	_, err = tx.ExecContext(ctx, `
-        UPDATE orders
-        SET tracking_number = $1, carrier = $2, estimated_delivery_date = $3, updated_at = $4
-        WHERE id = $5
-    `, req.TrackingNumber, req.Carrier, req.EstimatedDeliveryDate, time.Now(), req.OrderId)
+	// Update the order in the database
+	query, args, err := p.queryBuilder.Update("orders").
+		Set("shipping_address", shippingDetailsJSON).
+		Set("updated_at", time.Now()).
+		Where(squirrel.Eq{"id": req.OrderId}).
+		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("failed to update shipping details: %v", err)
+		return nil, fmt.Errorf("failed to build SQL query: %v", err)
 	}
 
-	if err := tx.Commit(); err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %v", err)
+	if _, err := p.db.ExecContext(ctx, query, args...); err != nil {
+		return nil, fmt.Errorf("failed to execute SQL query: %v", err)
 	}
 
-	return &genprotos.UpdateShippingDetailsResponse{
-		OrderId:               req.OrderId,
-		TrackingNumber:        req.TrackingNumber,
-		Carrier:               req.Carrier,
-		EstimatedDeliveryDate: req.EstimatedDeliveryDate,
-		UpdatedAt:             time.Now().Format(time.RFC3339),
-	}, nil
+	// Fetch the updated order details
+	var updatedOrder genprotos.UpdateShippingDetailsResponse
+	var shippingAddressJSON []byte
+
+	err = p.db.QueryRowContext(ctx, "SELECT id, shipping_address, updated_at FROM orders WHERE id = $1", req.OrderId).
+		Scan(&updatedOrder.OrderId, &shippingAddressJSON, &updatedOrder.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch updated order: %v", err)
+	}
+
+	// Unmarshal the JSON into the response struct fields
+	var shippingDetailsMap map[string]interface{}
+	if err := json.Unmarshal(shippingAddressJSON, &shippingDetailsMap); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal shipping address: %v", err)
+	}
+
+	updatedOrder.TrackingNumber = shippingDetailsMap["tracking_number"].(string)
+	updatedOrder.Carrier = shippingDetailsMap["carrier"].(string)
+	updatedOrder.EstimatedDeliveryDate = shippingDetailsMap["estimated_delivery_date"].(string)
+
+	return &updatedOrder, nil
 }
 
 func (p *Product) AddCategory(ctx context.Context, req *genprotos.AddCategoryRequest) (*genprotos.AddCategoryResponse, error) {
@@ -573,13 +643,13 @@ func (p *Product) AddCategory(ctx context.Context, req *genprotos.AddCategoryReq
 		return nil, fmt.Errorf("failed to start transaction: %v", err)
 	}
 	defer tx.Rollback()
-
+	id := uuid.NewString()
 	var categoryID string
 	err = tx.QueryRowContext(ctx, `
-		INSERT INTO categories (name, description, created_at)
-		VALUES ($1, $2, $3)
+		INSERT INTO product_categories (id, name, description, created_at)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id
-	`, req.Name, req.Description, time.Now()).Scan(&categoryID)
+	`, id, req.Name, req.Description, time.Now()).Scan(&categoryID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add category: %v", err)
 	}
@@ -685,7 +755,6 @@ func (p *Product) GetArtisanRankings(ctx context.Context, req *genprotos.GetArti
 func (p *Product) GetRecommendations(ctx context.Context, req *genprotos.GetRecommendationsRequest) (*genprotos.GetRecommendationsResponse, error) {
 	var recommendations []*genprotos.Recommendation
 
-	// Query to fetch recommendations based on user ID
 	query := `
         SELECT p.id, p.name, p.price, p.category_id
         FROM products p
@@ -717,4 +786,33 @@ func (p *Product) GetRecommendations(ctx context.Context, req *genprotos.GetReco
 	return &genprotos.GetRecommendationsResponse{
 		Recommendations: recommendations,
 	}, nil
+}
+
+func (p *Product) CheckPaymentStatus(ctx context.Context, req *genprotos.CheckPaymentStatusRequest) (*genprotos.CheckPaymentStatusResponse, error) {
+	query, args, err := p.queryBuilder.
+		Select("order_id, payment_id, amount, status, transaction_id, created_at").
+		From("payments").
+		Where(squirrel.Eq{"order_id": req.OrderId}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build SQL query: %v", err)
+	}
+
+	var payment genprotos.CheckPaymentStatusResponse
+	err = p.db.QueryRowContext(ctx, query, args...).Scan(
+		&payment.OrderId,
+		&payment.PaymentId,
+		&payment.Amount,
+		&payment.Status,
+		&payment.TransactionId,
+		&payment.CreatedAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("payment not found for order_id: %s", req.OrderId)
+		}
+		return nil, fmt.Errorf("failed to fetch payment status: %v", err)
+	}
+
+	return &payment, nil
 }

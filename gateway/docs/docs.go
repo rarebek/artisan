@@ -15,52 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/artisan/rankings": {
-            "post": {
-                "description": "Get rankings of artisans based on category",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "artisan"
-                ],
-                "summary": "Get artisan rankings",
-                "parameters": [
-                    {
-                        "description": "Artisan Rankings Request",
-                        "name": "artisanRankings",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.GetArtisanRankingsRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.GetArtisanRankingsResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
-            }
-        },
         "/auth/delete/{id}": {
             "delete": {
                 "description": "This endpoint for deleting user.",
@@ -642,7 +596,7 @@ const docTemplate = `{
             }
         },
         "/order/payment/status/{order_id}": {
-            "post": {
+            "get": {
                 "description": "Check the status of a payment",
                 "consumes": [
                     "application/json"
@@ -951,6 +905,136 @@ const docTemplate = `{
                 }
             }
         },
+        "/product/rate": {
+            "post": {
+                "description": "Rate a product by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Rate a product",
+                "parameters": [
+                    {
+                        "description": "Rating",
+                        "name": "rating",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.RateProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.RateProductResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/product/ratings/{product_id}": {
+            "get": {
+                "description": "Retrieve all ratings for a specific product",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Get all ratings for a product",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.GetAllRatingsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/product/search": {
+            "post": {
+                "description": "Search and filter products based on criteria",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Search and filter products",
+                "parameters": [
+                    {
+                        "description": "Details",
+                        "name": "product",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.SearchAndFilterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.SearchAndFilterResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/genprotos.Message"
+                        }
+                    }
+                }
+            }
+        },
         "/products": {
             "get": {
                 "description": "Retrieve all products from the catalog",
@@ -1002,139 +1086,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/products/rate": {
-            "post": {
-                "description": "Rate a product by its ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "products"
-                ],
-                "summary": "Rate a product",
-                "parameters": [
-                    {
-                        "description": "Rating",
-                        "name": "rating",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.RateProductRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.RateProductResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
-            }
-        },
-        "/products/ratings/{product_id}": {
-            "get": {
-                "description": "Retrieve all ratings for a specific product",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "products"
-                ],
-                "summary": "Get all ratings for a product",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Product ID",
-                        "name": "product_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.GetAllRatingsResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
-            }
-        },
-        "/products/search": {
-            "get": {
-                "description": "Search and filter products based on criteria",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "products"
-                ],
-                "summary": "Search and filter products",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Search term",
-                        "name": "search",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter criteria",
-                        "name": "filter",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.SearchAndFilterResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
-            }
-        },
         "/products/{id}": {
             "get": {
                 "description": "Retrieve a product by its ID",
@@ -1162,144 +1113,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/genprotos.GetProductResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
-            }
-        },
-        "/recommendations": {
-            "post": {
-                "description": "Get personalized product recommendations for a user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "recommendation"
-                ],
-                "summary": "Get product recommendations",
-                "parameters": [
-                    {
-                        "description": "Recommendations Request",
-                        "name": "recommendations",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.GetRecommendationsRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.GetRecommendationsResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
-            }
-        },
-        "/statistics": {
-            "post": {
-                "description": "Get total sales and revenue within a specified date range",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "statistics"
-                ],
-                "summary": "Get sales statistics",
-                "parameters": [
-                    {
-                        "description": "Statistics Request",
-                        "name": "statistics",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.GetStatisticsRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.GetStatisticsResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/activity": {
-            "post": {
-                "description": "Get user activity details within a specified date range",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Get user activity",
-                "parameters": [
-                    {
-                        "description": "User Activity Request",
-                        "name": "userActivity",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.GetUserActivityRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.GetUserActivityResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/genprotos.Message"
                         }
                     },
                     "500": {
@@ -1387,26 +1200,6 @@ const docTemplate = `{
                 },
                 "quantity": {
                     "type": "string"
-                }
-            }
-        },
-        "genprotos.ArtisanRanking": {
-            "type": "object",
-            "properties": {
-                "artisan_id": {
-                    "type": "string"
-                },
-                "average_rating": {
-                    "type": "number"
-                },
-                "full_name": {
-                    "type": "string"
-                },
-                "total_revenue": {
-                    "type": "number"
-                },
-                "total_sales": {
-                    "type": "integer"
                 }
             }
         },
@@ -1673,28 +1466,6 @@ const docTemplate = `{
                 }
             }
         },
-        "genprotos.GetArtisanRankingsRequest": {
-            "type": "object",
-            "properties": {
-                "category": {
-                    "type": "string"
-                },
-                "limit": {
-                    "type": "integer"
-                }
-            }
-        },
-        "genprotos.GetArtisanRankingsResponse": {
-            "type": "object",
-            "properties": {
-                "rankings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/genprotos.ArtisanRanking"
-                    }
-                }
-            }
-        },
         "genprotos.GetProductResponse": {
             "type": "object",
             "properties": {
@@ -1720,93 +1491,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "genprotos.GetRecommendationsRequest": {
-            "type": "object",
-            "properties": {
-                "limit": {
-                    "type": "integer"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "genprotos.GetRecommendationsResponse": {
-            "type": "object",
-            "properties": {
-                "recommendations": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/genprotos.Recommendation"
-                    }
-                }
-            }
-        },
-        "genprotos.GetStatisticsRequest": {
-            "type": "object",
-            "properties": {
-                "end_date": {
-                    "type": "string"
-                },
-                "start_date": {
-                    "type": "string"
-                }
-            }
-        },
-        "genprotos.GetStatisticsResponse": {
-            "type": "object",
-            "properties": {
-                "top_categories": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/genprotos.TopCategory"
-                    }
-                },
-                "top_products": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/genprotos.TopProduct"
-                    }
-                },
-                "total_revenue": {
-                    "type": "number"
-                },
-                "total_sales": {
-                    "type": "integer"
-                }
-            }
-        },
-        "genprotos.GetUserActivityRequest": {
-            "type": "object",
-            "properties": {
-                "end_date": {
-                    "type": "string"
-                },
-                "start_date": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "genprotos.GetUserActivityResponse": {
-            "type": "object",
-            "properties": {
-                "orders_placed": {
-                    "type": "integer"
-                },
-                "reviews_written": {
-                    "type": "integer"
-                },
-                "total_spent": {
-                    "type": "number"
-                },
-                "user_id": {
                     "type": "string"
                 }
             }
@@ -2041,23 +1725,6 @@ const docTemplate = `{
                 }
             }
         },
-        "genprotos.Recommendation": {
-            "type": "object",
-            "properties": {
-                "category_id": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "price": {
-                    "type": "number"
-                }
-            }
-        },
         "genprotos.RegisterRequest": {
             "type": "object",
             "properties": {
@@ -2109,6 +1776,29 @@ const docTemplate = `{
             "properties": {
                 "email": {
                     "type": "string"
+                }
+            }
+        },
+        "genprotos.SearchAndFilterRequest": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "max_price": {
+                    "type": "number"
+                },
+                "min_price": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
                 }
             }
         },
@@ -2207,40 +1897,6 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
-                }
-            }
-        },
-        "genprotos.TopCategory": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "revenue": {
-                    "type": "number"
-                },
-                "sales_count": {
-                    "type": "integer"
-                }
-            }
-        },
-        "genprotos.TopProduct": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "revenue": {
-                    "type": "number"
-                },
-                "sales_count": {
-                    "type": "integer"
                 }
             }
         },

@@ -48,7 +48,7 @@ func (s *Productservice) GetAllProducts(ctx context.Context, req *genprotos.GetA
 	return s.productService.GetAllProducts(ctx, req)
 }
 
-func (s *Productservice) SearchAndFilterProducts(ctx context.Context, req *genprotos.SearchAndFilterRequest) (*genprotos.SearchAndFilterResponse, error) {
+func (s *Productservice) SearchAndFilterProduct(ctx context.Context, req *genprotos.SearchAndFilterRequest) (*genprotos.SearchAndFilterResponse, error) {
 	s.logger.Println("Search and Filter Product Request")
 	return s.productService.SearchAndFilterProducts(ctx, req)
 }
@@ -113,4 +113,8 @@ func (s *Productservice) GetArtisanRankings(ctx context.Context, req *genprotos.
 
 func (s *Productservice) GetRecommendations(ctx context.Context, req *genprotos.GetRecommendationsRequest) (*genprotos.GetRecommendationsResponse, error) {
 	return s.productService.GetRecommendations(ctx, req)
+}
+
+func (s *Productservice) CheckPaymentStatus(ctx context.Context, req *genprotos.CheckPaymentStatusRequest) (*genprotos.CheckPaymentStatusResponse, error) {
+	return s.productService.CheckPaymentStatus(ctx, req)
 }

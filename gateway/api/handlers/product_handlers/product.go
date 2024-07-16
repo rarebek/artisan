@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/k0kubun/pp"
 	genprotos "github.com/ruziba3vich/armiya-gateway/genprotos"
 
 	"github.com/gin-gonic/gin"
@@ -172,19 +173,20 @@ func (h *ProductHandlers) GetProduct(ctx *gin.Context) {
 // @Tags products
 // @Accept json
 // @Produce json
-// @Param search query string false "Search term"
-// @Param filter query string false "Filter criteria"
+// @Param product body genprotos.SearchAndFilterRequest true "Details"
 // @Success 200 {object} genprotos.SearchAndFilterResponse
 // @Failure 400 {object} genprotos.Message
 // @Failure 500 {object} genprotos.Message
-// @Router /products/search [get]
+// @Router /product/search [post]
 func (h *ProductHandlers) SearchAndFilterProduct(ctx *gin.Context) {
 	var req genprotos.SearchAndFilterRequest
 
-	if err := ctx.ShouldBindQuery(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
+
+	pp.Println(req)
 
 	resp, err := h.client.SearchAndFilterProduct(context.Background(), &req)
 	if err != nil {
@@ -205,7 +207,7 @@ func (h *ProductHandlers) SearchAndFilterProduct(ctx *gin.Context) {
 // @Success 200 {object} genprotos.RateProductResponse
 // @Failure 400 {object} genprotos.Message
 // @Failure 500 {object} genprotos.Message
-// @Router /products/rate [post]
+// @Router /product/rate [post]
 func (h *ProductHandlers) RateProduct(ctx *gin.Context) {
 	var req genprotos.RateProductRequest
 
@@ -232,7 +234,7 @@ func (h *ProductHandlers) RateProduct(ctx *gin.Context) {
 // @Param product_id query string true "Product ID"
 // @Success 200 {object} genprotos.GetAllRatingsResponse
 // @Failure 500 {object} genprotos.Message
-// @Router /products/ratings/{product_id} [get]
+// @Router /product/ratings/{product_id} [get]
 func (h *ProductHandlers) GetAllRatings(ctx *gin.Context) {
 	var req genprotos.GetAllRatingsRequest
 	req.ProductId = ctx.Query("product_id")
@@ -428,15 +430,11 @@ func (h *ProductHandlers) Pay(ctx *gin.Context) {
 // @Success 200 {object} genprotos.CheckPaymentStatusResponse
 // @Failure 400 {object} genprotos.Message
 // @Failure 500 {object} genprotos.Message
-// @Router /order/payment/status/{order_id} [post]
+// @Router /order/payment/status/{order_id} [get]
 func (h *ProductHandlers) CheckPaymentStatus(ctx *gin.Context) {
 	var req genprotos.CheckPaymentStatusRequest
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
+	id := ctx.Param("order_id")
+	req.OrderId = id
 	resp, err := h.client.CheckPaymentStatus(context.Background(), &req)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
@@ -494,118 +492,6 @@ func (h *ProductHandlers) AddCategory(ctx *gin.Context) {
 	}
 
 	resp, err := h.client.AddCategory(context.Background(), &req)
-	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-
-	ctx.JSON(200, resp)
-}
-
-// GetStatistics godoc
-// @Summary Get sales statistics
-// @Description Get total sales and revenue within a specified date range
-// @Tags statistics
-// @Accept json
-// @Produce json
-// @Param statistics body genprotos.GetStatisticsRequest true "Statistics Request"
-// @Success 200 {object} genprotos.GetStatisticsResponse
-// @Failure 400 {object} genprotos.Message
-// @Failure 500 {object} genprotos.Message
-// @Router /statistics [post]
-func (h *ProductHandlers) GetStatistics(ctx *gin.Context) {
-	var req genprotos.GetStatisticsRequest
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	resp, err := h.client.GetStatistics(context.Background(), &req)
-	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-
-	ctx.JSON(200, resp)
-}
-
-// GetUserActivity godoc
-// @Summary Get user activity
-// @Description Get user activity details within a specified date range
-// @Tags user
-// @Accept json
-// @Produce json
-// @Param userActivity body genprotos.GetUserActivityRequest true "User Activity Request"
-// @Success 200 {object} genprotos.GetUserActivityResponse
-// @Failure 400 {object} genprotos.Message
-// @Failure 500 {object} genprotos.Message
-// @Router /user/activity [post]
-func (h *ProductHandlers) GetUserActivity(ctx *gin.Context) {
-	var req genprotos.GetUserActivityRequest
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	resp, err := h.client.GetUserActivity(context.Background(), &req)
-	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-
-	ctx.JSON(200, resp)
-}
-
-// GetArtisanRankings godoc
-// @Summary Get artisan rankings
-// @Description Get rankings of artisans based on category
-// @Tags artisan
-// @Accept json
-// @Produce json
-// @Param artisanRankings body genprotos.GetArtisanRankingsRequest true "Artisan Rankings Request"
-// @Success 200 {object} genprotos.GetArtisanRankingsResponse
-// @Failure 400 {object} genprotos.Message
-// @Failure 500 {object} genprotos.Message
-// @Router /artisan/rankings [post]
-func (h *ProductHandlers) GetArtisanRankings(ctx *gin.Context) {
-	var req genprotos.GetArtisanRankingsRequest
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	resp, err := h.client.GetArtisanRankings(context.Background(), &req)
-	if err != nil {
-		ctx.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-
-	ctx.JSON(200, resp)
-}
-
-// GetRecommendations godoc
-// @Summary Get product recommendations
-// @Description Get personalized product recommendations for a user
-// @Tags recommendation
-// @Accept json
-// @Produce json
-// @Param recommendations body genprotos.GetRecommendationsRequest true "Recommendations Request"
-// @Success 200 {object} genprotos.GetRecommendationsResponse
-// @Failure 400 {object} genprotos.Message
-// @Failure 500 {object} genprotos.Message
-// @Router /recommendations [post]
-func (h *ProductHandlers) GetRecommendations(ctx *gin.Context) {
-	var req genprotos.GetRecommendationsRequest
-
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	resp, err := h.client.GetRecommendations(context.Background(), &req)
 	if err != nil {
 		ctx.JSON(500, gin.H{"error": err.Error()})
 		return

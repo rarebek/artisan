@@ -71,10 +71,6 @@ func (a *API) RUN() error {
 		api.PUT("/order/shipping", a.producthandler.UpdateShippingDetails)
 
 		api.POST("/category", a.producthandler.AddCategory)
-		api.POST("/statistics", a.producthandler.GetStatistics)
-		api.POST("/user/activity", a.producthandler.GetUserActivity)
-		api.POST("/artisan/rankings", a.producthandler.GetArtisanRankings)
-		api.POST("/recommendations", a.producthandler.GetRecommendations)
 	}
 
 	return router.Run(a.cfg.ServerAddress)

@@ -50,19 +50,6 @@ definitions:
       quantity:
         type: string
     type: object
-  genprotos.ArtisanRanking:
-    properties:
-      artisan_id:
-        type: string
-      average_rating:
-        type: number
-      full_name:
-        type: string
-      total_revenue:
-        type: number
-      total_sales:
-        type: integer
-    type: object
   genprotos.AuthMessage:
     properties:
       message:
@@ -233,20 +220,6 @@ definitions:
           $ref: '#/definitions/genprotos.User'
         type: array
     type: object
-  genprotos.GetArtisanRankingsRequest:
-    properties:
-      category:
-        type: string
-      limit:
-        type: integer
-    type: object
-  genprotos.GetArtisanRankingsResponse:
-    properties:
-      rankings:
-        items:
-          $ref: '#/definitions/genprotos.ArtisanRanking'
-        type: array
-    type: object
   genprotos.GetProductResponse:
     properties:
       category_id:
@@ -264,62 +237,6 @@ definitions:
       quantity:
         type: string
       updated_at:
-        type: string
-    type: object
-  genprotos.GetRecommendationsRequest:
-    properties:
-      limit:
-        type: integer
-      user_id:
-        type: string
-    type: object
-  genprotos.GetRecommendationsResponse:
-    properties:
-      recommendations:
-        items:
-          $ref: '#/definitions/genprotos.Recommendation'
-        type: array
-    type: object
-  genprotos.GetStatisticsRequest:
-    properties:
-      end_date:
-        type: string
-      start_date:
-        type: string
-    type: object
-  genprotos.GetStatisticsResponse:
-    properties:
-      top_categories:
-        items:
-          $ref: '#/definitions/genprotos.TopCategory'
-        type: array
-      top_products:
-        items:
-          $ref: '#/definitions/genprotos.TopProduct'
-        type: array
-      total_revenue:
-        type: number
-      total_sales:
-        type: integer
-    type: object
-  genprotos.GetUserActivityRequest:
-    properties:
-      end_date:
-        type: string
-      start_date:
-        type: string
-      user_id:
-        type: string
-    type: object
-  genprotos.GetUserActivityResponse:
-    properties:
-      orders_placed:
-        type: integer
-      reviews_written:
-        type: integer
-      total_spent:
-        type: number
-      user_id:
         type: string
     type: object
   genprotos.Item:
@@ -471,17 +388,6 @@ definitions:
       user_id:
         type: string
     type: object
-  genprotos.Recommendation:
-    properties:
-      category_id:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      price:
-        type: number
-    type: object
   genprotos.RegisterRequest:
     properties:
       email:
@@ -516,6 +422,21 @@ definitions:
     properties:
       email:
         type: string
+    type: object
+  genprotos.SearchAndFilterRequest:
+    properties:
+      category:
+        type: string
+      limit:
+        type: integer
+      max_price:
+        type: number
+      min_price:
+        type: number
+      name:
+        type: string
+      page:
+        type: integer
     type: object
   genprotos.SearchAndFilterResponse:
     properties:
@@ -581,28 +502,6 @@ definitions:
       username:
         type: string
     type: object
-  genprotos.TopCategory:
-    properties:
-      id:
-        type: string
-      name:
-        type: string
-      revenue:
-        type: number
-      sales_count:
-        type: integer
-    type: object
-  genprotos.TopProduct:
-    properties:
-      id:
-        type: string
-      name:
-        type: string
-      revenue:
-        type: number
-      sales_count:
-        type: integer
-    type: object
   genprotos.UpdateShippingDetailsRequest:
     properties:
       carrier:
@@ -645,36 +544,6 @@ info:
   title: API
   version: "1.0"
 paths:
-  /artisan/rankings:
-    post:
-      consumes:
-      - application/json
-      description: Get rankings of artisans based on category
-      parameters:
-      - description: Artisan Rankings Request
-        in: body
-        name: artisanRankings
-        required: true
-        schema:
-          $ref: '#/definitions/genprotos.GetArtisanRankingsRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/genprotos.GetArtisanRankingsResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-      summary: Get artisan rankings
-      tags:
-      - artisan
   /auth/delete/{id}:
     delete:
       consumes:
@@ -1081,7 +950,7 @@ paths:
       tags:
       - payments
   /order/payment/status/{order_id}:
-    post:
+    get:
       consumes:
       - application/json
       description: Check the status of a payment
@@ -1258,6 +1127,91 @@ paths:
       summary: Edit an existing product
       tags:
       - products
+  /product/rate:
+    post:
+      consumes:
+      - application/json
+      description: Rate a product by its ID
+      parameters:
+      - description: Rating
+        in: body
+        name: rating
+        required: true
+        schema:
+          $ref: '#/definitions/genprotos.RateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/genprotos.RateProductResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+      summary: Rate a product
+      tags:
+      - products
+  /product/ratings/{product_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all ratings for a specific product
+      parameters:
+      - description: Product ID
+        in: query
+        name: product_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/genprotos.GetAllRatingsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+      summary: Get all ratings for a product
+      tags:
+      - products
+  /product/search:
+    post:
+      consumes:
+      - application/json
+      description: Search and filter products based on criteria
+      parameters:
+      - description: Details
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/genprotos.SearchAndFilterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/genprotos.SearchAndFilterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/genprotos.Message'
+      summary: Search and filter products
+      tags:
+      - products
   /products:
     get:
       consumes:
@@ -1317,181 +1271,4 @@ paths:
       summary: Get a product by ID
       tags:
       - products
-  /products/rate:
-    post:
-      consumes:
-      - application/json
-      description: Rate a product by its ID
-      parameters:
-      - description: Rating
-        in: body
-        name: rating
-        required: true
-        schema:
-          $ref: '#/definitions/genprotos.RateProductRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/genprotos.RateProductResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-      summary: Rate a product
-      tags:
-      - products
-  /products/ratings/{product_id}:
-    get:
-      consumes:
-      - application/json
-      description: Retrieve all ratings for a specific product
-      parameters:
-      - description: Product ID
-        in: query
-        name: product_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/genprotos.GetAllRatingsResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-      summary: Get all ratings for a product
-      tags:
-      - products
-  /products/search:
-    get:
-      consumes:
-      - application/json
-      description: Search and filter products based on criteria
-      parameters:
-      - description: Search term
-        in: query
-        name: search
-        type: string
-      - description: Filter criteria
-        in: query
-        name: filter
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/genprotos.SearchAndFilterResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-      summary: Search and filter products
-      tags:
-      - products
-  /recommendations:
-    post:
-      consumes:
-      - application/json
-      description: Get personalized product recommendations for a user
-      parameters:
-      - description: Recommendations Request
-        in: body
-        name: recommendations
-        required: true
-        schema:
-          $ref: '#/definitions/genprotos.GetRecommendationsRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/genprotos.GetRecommendationsResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-      summary: Get product recommendations
-      tags:
-      - recommendation
-  /statistics:
-    post:
-      consumes:
-      - application/json
-      description: Get total sales and revenue within a specified date range
-      parameters:
-      - description: Statistics Request
-        in: body
-        name: statistics
-        required: true
-        schema:
-          $ref: '#/definitions/genprotos.GetStatisticsRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/genprotos.GetStatisticsResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-      summary: Get sales statistics
-      tags:
-      - statistics
-  /user/activity:
-    post:
-      consumes:
-      - application/json
-      description: Get user activity details within a specified date range
-      parameters:
-      - description: User Activity Request
-        in: body
-        name: userActivity
-        required: true
-        schema:
-          $ref: '#/definitions/genprotos.GetUserActivityRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/genprotos.GetUserActivityResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/genprotos.Message'
-      summary: Get user activity
-      tags:
-      - user
 swagger: "2.0"
