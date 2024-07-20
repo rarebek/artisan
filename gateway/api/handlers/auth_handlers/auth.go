@@ -34,7 +34,7 @@ func NewAuthHandlers(client genprotos.AuthServiceClient, logger *log.Logger) *Au
 func (a *AuthHandlers) Register(ctx *gin.Context) {
 	var req genprotos.RegisterRequest
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err	 != nil {
 		ctx.IndentedJSON(400, gin.H{"error": err.Error()})
 		return
 	}

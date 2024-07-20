@@ -790,7 +790,7 @@ func (p *Product) GetRecommendations(ctx context.Context, req *genprotos.GetReco
 
 func (p *Product) CheckPaymentStatus(ctx context.Context, req *genprotos.CheckPaymentStatusRequest) (*genprotos.CheckPaymentStatusResponse, error) {
 	query, args, err := p.queryBuilder.
-		Select("order_id, payment_id, amount, status, transaction_id, created_at").
+		Select("order_id, id, amount, status, transaction_id, created_at").
 		From("payments").
 		Where(squirrel.Eq{"order_id": req.OrderId}).
 		ToSql()
